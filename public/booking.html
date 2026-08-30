@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Turf Slot — TurfBook</title>
+    
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .sport-select-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #ffffff;
+        }
+        .sport-select-card:hover {
+            border-color: var(--primary) !important;
+            transform: translateY(-2px);
+        }
+        .sport-select-card.selected-sport {
+            border-color: var(--primary) !important;
+            background: var(--primary-light) !important;
+            box-shadow: 0 4px 10px var(--primary-glow);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Navbar Container -->
+    <div id="main-navbar-container"></div>
+
+    <div class="container py-4">
+        <!-- Turf Header Card -->
+        <div class="card border-0 shadow-sm p-3 rounded-4 bg-white mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <img id="book-turf-img" src="" class="rounded-3" style="width: 80px; height: 60px; object-fit: cover;" alt="Turf">
+                <div>
+                    <span class="badge bg-success mb-1">Booking Arena</span>
+                    <h4 class="fw-bold text-secondary mb-0" id="book-turf-name">Loading Arena...</h4>
+                    <small class="text-muted" id="book-turf-location">...</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Booking Steps (8 Cols) -->
+            <div class="col-lg-8 mb-4">
+                <!-- STEP 1: SELECT SPORT -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                    <h5 class="fw-bold text-secondary mb-3">
+                        <span class="badge bg-primary me-2">1</span>Select Game / Sport
+                    </h5>
+                    <div class="row" id="sports-selector-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- STEP 2: SELECT DATE -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                    <h5 class="fw-bold text-secondary mb-3">
+                        <span class="badge bg-primary me-2">2</span>Select Match Date
+                    </h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <input type="date" id="booking-date-input" class="form-control form-control-lg border-2">
+                        </div>
+                        <div class="col-md-6 text-muted small mt-2 mt-md-0">
+                            <i class="bi bi-info-circle me-1"></i>You can book up to 30 days in advance.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: SELECT TIME SLOT -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                        <h5 class="fw-bold text-secondary mb-0">
+                            <span class="badge bg-primary me-2">3</span>Select 1-Hour Time Slot
+                        </h5>
+                        <div class="d-flex gap-3 small">
+                            <span><span class="badge bg-success rounded-circle p-1"> </span> Available</span>
+                            <span><span class="badge bg-secondary rounded-circle p-1"> </span> Booked</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slot-grid" id="slots-grid-container">
+                        <!-- Loaded dynamically with available/booked slots -->
+                    </div>
+                </div>
+
+                <!-- STEP 4: DURATION & PLAYERS -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                    <h5 class="fw-bold text-secondary mb-3">
+                        <span class="badge bg-primary me-2">4</span>Players & Duration
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Duration (Hours)</label>
+                            <select id="booking-duration-select" class="form-select">
+                                <option value="1" selected>1 Hour</option>
+                                <option value="2">2 Hours</option>
+                                <option value="3">3 Hours</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Estimated Players</label>
+                            <input type="number" id="booking-players-input" class="form-control" value="10" min="2" max="30">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 5: PAYMENT METHOD -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <h5 class="fw-bold text-secondary mb-3">
+                        <span class="badge bg-primary me-2">5</span>Payment Option
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-check p-3 border rounded-3 bg-light">
+                                <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="pay-venue" value="Pay at Venue" checked>
+                                <label class="form-check-label fw-bold text-secondary" for="pay-venue">
+                                    💵 Pay at Venue (Cash / UPI on arrival)
+                                </label>
+                                <small class="text-muted d-block ms-4">Pay directly at the reception counter before playing.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check p-3 border rounded-3 bg-light">
+                                <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="pay-online" value="Demo Online Payment">
+                                <label class="form-check-label fw-bold text-secondary" for="pay-online">
+                                    💳 Demo Online Payment (Instant)
+                                </label>
+                                <small class="text-muted d-block ms-4">Simulated instant card / UPI checkout flow.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Demo Online Card details preview (Mock) -->
+                    <div id="demo-online-payment-card" class="mt-3 p-3 bg-white border border-success rounded-3 d-none">
+                        <div class="d-flex align-items-center gap-2 mb-2 text-success fw-bold">
+                            <i class="bi bi-shield-lock-fill fs-5"></i> Demo Payment Gateway Simulator
+                        </div>
+                        <p class="small text-muted mb-0">No real payment will be charged. This demonstrates immediate online payment confirmation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Booking Summary (4 Cols) -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg rounded-4 p-4 sticky-top bg-white" style="top: 85px;">
+                    <h5 class="fw-bold text-secondary mb-3">Booking Summary</h5>
+                    
+                    <div class="border-bottom pb-3 mb-3 small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Sport</span>
+                            <strong id="summary-sport" class="text-secondary">Football</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Match Date</span>
+                            <strong id="summary-date" class="text-secondary">Select Date</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Time Slot</span>
+                            <strong id="summary-time" class="text-primary">Select Slot</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Duration</span>
+                            <strong id="summary-duration" class="text-secondary">1 Hour</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Players</span>
+                            <strong id="summary-players" class="text-secondary">10 Players</strong>
+                        </div>
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="border-bottom pb-3 mb-3 small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Turf Slot Fee</span>
+                            <strong id="summary-price" class="text-secondary">₹800</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Convenience Fee</span>
+                            <strong id="summary-fee" class="text-secondary">₹40</strong>
+                        </div>
+                        <div class="d-flex justify-content-between pt-2 border-top">
+                            <span class="fw-bold text-secondary fs-6">Total Amount</span>
+                            <span class="fs-4 fw-extrabold text-success" id="summary-total">₹840</span>
+                        </div>
+                    </div>
+
+                    <button id="proceed-booking-btn" class="btn btn-primary-turf w-100 py-3 fw-bold" disabled>
+                        Confirm Booking
+                    </button>
+                    <p class="text-muted text-center small mt-2 mb-0">By booking, you agree to arena house rules.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOKING SUCCESS MODAL -->
+    <div class="modal fade" id="bookingSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg p-3 text-center">
+                <div class="modal-body p-4">
+                    <div class="display-3 mb-2">🎉</div>
+                    <h3 class="fw-extrabold text-success mb-1">Booking Confirmed!</h3>
+                    <p class="text-muted small mb-4">Your sports turf slot has been secured.</p>
+
+                    <div class="bg-light rounded-3 p-3 text-start small mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Booking Reference:</span>
+                            <strong id="success-booking-ref" class="text-primary font-monospace">TB-2026-XXXX</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Turf:</span>
+                            <strong id="success-turf-name">Kick Arena</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Sport:</span>
+                            <strong id="success-sport-name">Football</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Schedule:</span>
+                            <strong id="success-date-time">Today • 07:00 PM</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Amount:</span>
+                            <strong id="success-total-paid" class="text-success">₹840</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Payment:</span>
+                            <span id="success-payment-method" class="badge bg-secondary">Pay at Venue</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="dashboard.html" class="btn btn-primary-turf w-100 py-2">
+                            <i class="bi bi-grid me-1"></i>View in Dashboard
+                        </a>
+                        <a href="index.html" class="btn btn-outline-secondary w-100 py-2">
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- TurfBook Scripts -->
+    <script src="js/common.js"></script>
+    <script src="js/booking.js"></script>
+    <script src="js/ai.js"></script>
+</body>
+</html>
