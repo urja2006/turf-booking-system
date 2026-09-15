@@ -141,6 +141,102 @@ function parseNaturalQuery(queryText, userLat = null, userLng = null) {
 }
 
 /**
+ * Call OpenAI API if OPENAI_API_KEY is configured
+ */
+async function parseQueryWithOpenAI(queryText, userLat = null, userLng = null) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey || apiKey.trim() === '' || apiKey === 'your_openai_api_key_here') {
+        return null; // Fallback to built-in NLP
+    }
+
+    try {
+        const prompt = `
+You are an AI assistant for TurfBook, a sports turf booking platform in India.
+User query: "${queryText}"
+
+Extract the intent into valid JSON matching this exact structure:
+{
+  "detectedSport": "football" | "box_cricket" | "cricket" | "badminton" | "futsal" | "basketball" | "volleyball" | "tennis" | null,
+  "maxPrice": number (in INR) | null,
+  "maxDistance": number (in km) | null,
+  "searchLocation": "city or locality name in India (e.g. Vastrapur, Ahmedabad, Surat, Mumbai, Pune, Bengaluru, Delhi)" | null,
+  "targetDate": "YYYY-MM-DD" | null,
+  "preferredTime": "Morning" | "Afternoon" | "Evening" | null,
+  "players": number | null,
+  "aiSummary": "A short, friendly 1-2 sentence conversational answer to the player acknowledging what they are looking for."
+}
+Return ONLY the raw JSON object, without markdown formatting.
+`;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: 'You are a structured NLP extraction assistant for a sports venue booking platform.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.2,
+                max_tokens: 300
+            })
+        });
+
+        if (!response.ok) {
+            console.warn(`OpenAI API responded with status ${response.status}. Using built-in NLP fallback.`);
+            return null;
+        }
+
+        const data = await response.json();
+        const rawContent = data.choices?.[0]?.message?.content?.trim();
+        if (rawContent) {
+            const cleanJson = rawContent.replace(/^```json\s*/, '').replace(/```$/, '').trim();
+            const parsed = JSON.parse(cleanJson);
+
+            // Match coordinates if location is recognized
+            let targetLat = userLat;
+            let targetLng = userLng;
+            let locName = parsed.searchLocation;
+
+            if (parsed.searchLocation) {
+                const locKey = parsed.searchLocation.toLowerCase();
+                for (const [key, coords] of Object.entries(LOCALITY_COORDS)) {
+                    if (locKey.includes(key) || key.includes(locKey)) {
+                        targetLat = coords.lat;
+                        targetLng = coords.lng;
+                        locName = coords.city ? `${key.toUpperCase()} (${coords.city})` : key.toUpperCase();
+                        break;
+                    }
+                }
+            }
+
+            return {
+                originalQuery: queryText,
+                detectedSport: parsed.detectedSport || null,
+                maxPrice: parsed.maxPrice || null,
+                maxDistance: parsed.maxDistance || null,
+                searchLocation: parsed.searchLocation || null,
+                targetLat,
+                targetLng,
+                locationName: locName || (targetLat ? 'your location' : 'all locations'),
+                targetDate: parsed.targetDate || null,
+                preferredTime: parsed.preferredTime || null,
+                players: parsed.players || null,
+                customAiMessage: parsed.aiSummary || null,
+                isPoweredByOpenAI: true
+            };
+        }
+    } catch (err) {
+        console.warn('OpenAI query parsing failed, using built-in NLP fallback:', err.message);
+    }
+
+    return null;
+}
+
+/**
  * Filter turfs based on parsed parameters
  */
 function searchTurfsWithAI(turfsList, parsedParams) {
@@ -279,6 +375,7 @@ function getPersonalizedRecommendations(userHistoryBookings, favorites, allTurfs
 
 module.exports = {
     parseNaturalQuery,
+    parseQueryWithOpenAI,
     searchTurfsWithAI,
     getPersonalizedRecommendations
 };

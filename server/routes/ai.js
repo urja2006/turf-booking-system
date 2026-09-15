@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { localStore } = require('../supabase');
 const { optionalAuth, requireAuth } = require('../middleware/auth');
-const { parseNaturalQuery, searchTurfsWithAI, getPersonalizedRecommendations } = require('../aiService');
+const { parseNaturalQuery, parseQueryWithOpenAI, searchTurfsWithAI, getPersonalizedRecommendations } = require('../aiService');
 
 /**
  * POST /api/ai/query
@@ -23,31 +23,37 @@ router.post('/query', optionalAuth, async (req, res) => {
         const userLat = lat ? parseFloat(lat) : null;
         const userLng = lng ? parseFloat(lng) : null;
 
-        // Parse query using NLP parser
-        const parsed = parseNaturalQuery(query, userLat, userLng);
+        // Try OpenAI first (if OPENAI_API_KEY is configured), else fallback to built-in NLP parser
+        let parsed = await parseQueryWithOpenAI(query, userLat, userLng);
+        if (!parsed) {
+            parsed = parseNaturalQuery(query, userLat, userLng);
+        }
 
         // Find matching turfs
         const matches = searchTurfsWithAI(localStore.turfs, parsed);
 
         // Construct friendly AI response message
-        let responseText = `I found ${matches.length} turf${matches.length === 1 ? '' : 's'}`;
-        const criteriaParts = [];
-        if (parsed.detectedSport) criteriaParts.push(`for ${parsed.detectedSport.replace('_', ' ')}`);
-        if (parsed.maxPrice) criteriaParts.push(`under ₹${parsed.maxPrice}/hr`);
-        if (parsed.searchLocation) criteriaParts.push(`around ${parsed.locationName}`);
-        if (parsed.maxDistance) criteriaParts.push(`within ${parsed.maxDistance} km`);
-        if (parsed.targetDate) criteriaParts.push(`for ${parsed.targetDate}`);
-        if (parsed.preferredTime) criteriaParts.push(`during ${parsed.preferredTime}`);
-        if (parsed.players) criteriaParts.push(`for ${parsed.players} players`);
+        let responseText = parsed.customAiMessage;
+        if (!responseText) {
+            responseText = `I found ${matches.length} turf${matches.length === 1 ? '' : 's'}`;
+            const criteriaParts = [];
+            if (parsed.detectedSport) criteriaParts.push(`for ${parsed.detectedSport.replace('_', ' ')}`);
+            if (parsed.maxPrice) criteriaParts.push(`under ₹${parsed.maxPrice}/hr`);
+            if (parsed.searchLocation) criteriaParts.push(`around ${parsed.locationName}`);
+            if (parsed.maxDistance) criteriaParts.push(`within ${parsed.maxDistance} km`);
+            if (parsed.targetDate) criteriaParts.push(`for ${parsed.targetDate}`);
+            if (parsed.preferredTime) criteriaParts.push(`during ${parsed.preferredTime}`);
+            if (parsed.players) criteriaParts.push(`for ${parsed.players} players`);
 
-        if (criteriaParts.length > 0) {
-            responseText += ` matching ${criteriaParts.join(', ')}.`;
-        } else {
-            responseText += ` based on your request.`;
-        }
+            if (criteriaParts.length > 0) {
+                responseText += ` matching ${criteriaParts.join(', ')}.`;
+            } else {
+                responseText += ` based on your request.`;
+            }
 
-        if (matches.length === 0) {
-            responseText = `I couldn't find any turfs strictly matching all your criteria (${criteriaParts.join(', ')}). Try increasing your search radius or adjusting the price limit!`;
+            if (matches.length === 0) {
+                responseText = `I couldn't find any turfs strictly matching all your criteria (${criteriaParts.join(', ')}). Try increasing your search radius or adjusting the price limit!`;
+            }
         }
 
         return res.json({
