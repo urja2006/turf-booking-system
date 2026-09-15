@@ -54,7 +54,67 @@ async function initTurfListPage() {
         toggleMapBtn.addEventListener('click', toggleMapView);
     }
 
+    // Listen for custom location changed events
+    window.addEventListener('turfbook:locationChanged', () => {
+        updateActiveLocationBanner();
+        fetchAndRenderTurfs();
+    });
+
+    updateActiveLocationBanner();
+
     // Load and render turfs
+    await fetchAndRenderTurfs();
+}
+
+/**
+ * Update Location Header Banner Text
+ */
+function updateActiveLocationBanner() {
+    const bannerEl = document.getElementById('active-location-name');
+    if (!bannerEl) return;
+    const loc = getSavedLocation();
+    bannerEl.innerHTML = loc && loc.name 
+        ? `${loc.name} ${loc.isGPS ? '<span class="badge bg-success ms-1" style="font-size: 0.65rem;">GPS Verified</span>' : ''}`
+        : 'Ahmedabad, Gujarat';
+}
+
+/**
+ * Handle Auto-Detect Location Click
+ */
+async function handleDetectLocationClick(btn) {
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Detecting...`;
+
+    try {
+        const loc = await requestCurrentLocation();
+        showToast(`📍 Location set to ${loc.name} (${loc.lat.toFixed(2)}, ${loc.lng.toFixed(2)})`, 'success');
+        updateActiveLocationBanner();
+
+        // Reset city filter to all to allow radius search around GPS
+        const citySelect = document.getElementById('filter-city');
+        if (citySelect) citySelect.value = 'all';
+
+        await fetchAndRenderTurfs();
+    } catch (err) {
+        showToast(err.message || 'Could not detect location. Selected Ahmedabad.', 'warning');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+}
+
+/**
+ * Switch Active City via Dropdown or Quick Chips
+ */
+async function switchCityLocation(cityName) {
+    const loc = await geocodePlace(cityName);
+    const citySelect = document.getElementById('filter-city');
+    if (citySelect) {
+        citySelect.value = cityName;
+    }
+    updateActiveLocationBanner();
+    showToast(`Switched location to ${cityName}`, 'info');
     await fetchAndRenderTurfs();
 }
 

@@ -22,7 +22,7 @@
 
     <div class="container py-4">
         <!-- Top Title Bar -->
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div>
                 <h3 class="fw-extrabold text-secondary mb-1">Explore Sports Turfs</h3>
                 <p class="text-muted small mb-0" id="turf-count-display">Finding available turfs...</p>
@@ -31,6 +31,41 @@
                 <button class="btn btn-outline-turf btn-sm" id="toggle-map-btn">
                     <i class="bi bi-map me-1"></i>Map View
                 </button>
+            </div>
+        </div>
+
+        <!-- Interactive Location Bar -->
+        <div class="card border-0 shadow-sm p-3 mb-4 bg-white rounded-4 border-start border-success border-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-primary-light text-primary-dark p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-geo-alt-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Search Location & Distance</small>
+                        <strong class="text-secondary" id="active-location-name">Detecting location...</strong>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                    <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 fw-semibold" id="btn-detect-location" onclick="handleDetectLocationClick(this)">
+                        <i class="bi bi-crosshair"></i> Auto-Detect My Location
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle fw-semibold border" type="button" data-bs-toggle="dropdown">
+                            Change City
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><h6 class="dropdown-header">Select City</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchCityLocation('Ahmedabad')">📍 Ahmedabad (Vastrapur, SBR, Satellite)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchCityLocation('Surat')">📍 Surat (Vesu, Adajan)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchCityLocation('Vadodara')">📍 Vadodara (Alkapuri, Gotri)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchCityLocation('Mumbai')">📍 Mumbai (Bandra, Andheri, Powai)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchCityLocation('Pune')">📍 Pune (Baner, Kothrud)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchCityLocation('Bengaluru')">📍 Bengaluru (Koramangala, Indiranagar)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchCityLocation('Delhi')">📍 Delhi (Saket, Hauz Khas)</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
 

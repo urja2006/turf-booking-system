@@ -344,15 +344,21 @@
 
         async function handleUseCurrentLocation(btn) {
             const orig = btn.innerHTML;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Detecting...`;
             try {
                 const loc = await requestCurrentLocation();
-                showToast(`Location acquired (${loc.lat.toFixed(3)}, ${loc.lng.toFixed(3)})`, 'success');
+                showToast(`📍 Location detected: ${loc.name}`, 'success');
                 setTimeout(() => {
-                    window.location.href = 'turfs.html?radius=25';
-                }, 600);
+                    window.location.href = `turfs.html?radius=25`;
+                }, 500);
             } catch (err) {
-                showToast(err.message, 'warning');
+                showToast(err.message || 'Could not detect location. Showing all turfs.', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'turfs.html';
+                }, 500);
+            } finally {
+                btn.disabled = false;
                 btn.innerHTML = orig;
             }
         }
