@@ -64,12 +64,22 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start server locally
-if (process.env.NODE_ENV !== 'production') {
+// Start server when run directly (local npm start or node server/server.js)
+if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(`TurfBook server running on http://localhost:${PORT}`);
+        console.log(`
+╔═════════════════════════════════════════════════════════════════╗
+║                   ⚽ TURFBOOK SERVER STARTED 🏟️                 ║
+╠═════════════════════════════════════════════════════════════════╣
+║  🌐 Web Application:   http://localhost:${PORT}                   ║
+║  👑 Admin Dashboard:   http://localhost:${PORT}/admin-login.html    ║
+║  🤖 AI Assistant:      Active & Ready                           ║
+║  🔑 Demo Admin:        admin@turfbook.com  |  admin123          ║
+║  👤 Demo User:         user@turfbook.com   |  user123           ║
+╚═════════════════════════════════════════════════════════════════╝
+        `);
     });
 }
 
-// Export app for Vercel
+// Export app for Vercel Serverless Functions
 module.exports = app;

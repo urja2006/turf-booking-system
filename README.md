@@ -212,6 +212,17 @@ The AI Assistant handles natural language requests in the floating widget:
 
 ## 🚢 Deployment
 
+### Deploy to Vercel (Recommended)
+1. Push this repository to GitHub.
+2. Go to [Vercel](https://vercel.com) and import your repository.
+3. Framework Preset: **Other** (Root Directory: `./`).
+4. Under **Environment Variables**, add:
+   - `SUPABASE_URL` (optional if using local fallback mode)
+   - `SUPABASE_ANON_KEY`
+   - `JWT_SECRET`
+   - `OPENAI_API_KEY` (optional)
+5. Click **Deploy**. Vercel will automatically serve the static files from `public/` and route all `/api/*` endpoints to the serverless function in `api/index.js`.
+
 ### Deploy to Render / Railway / Heroku
 1. Push this repository to GitHub.
 2. In [Render](https://render.com) or [Railway](https://railway.app), create a new **Web Service** and connect your repository.
