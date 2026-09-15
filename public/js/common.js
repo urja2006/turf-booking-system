@@ -13,9 +13,18 @@ function getApiUrl(path) {
     if (!path) return '';
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
     const cleanPath = path.startsWith('/') ? path : '/' + path;
-    if (window.location.protocol === 'file:' || !window.location.port) {
+
+    // If opened directly from file system (file:///...)
+    if (window.location.protocol === 'file:') {
         return 'http://localhost:5000' + cleanPath;
     }
+
+    // If running on local dev static server (e.g. Live Server on port 5500 or 3000)
+    if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port && window.location.port !== '5000') {
+        return 'http://localhost:5000' + cleanPath;
+    }
+
+    // In production (Vercel, custom domain) or on port 5000, use relative path
     return cleanPath;
 }
 
